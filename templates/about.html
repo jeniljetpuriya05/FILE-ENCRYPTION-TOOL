@@ -1,0 +1,226 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About | AES Secure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-transform: capitalize;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #00ff88;
+        }
+
+        .btn-nav {
+            padding: 0.7rem 1.8rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: capitalize;
+            text-decoration: none;
+        }
+
+        .btn-nav:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .about-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 5% 3rem;
+            background: linear-gradient(135deg, #000000 0%, #001a0d 50%, #000000 100%);
+            min-height: 100vh;
+        }
+
+        .about-content h2 {
+            font-size: 3.5rem;
+            color: #00ff88;
+            margin-bottom: 2rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .about-content h3 {
+            font-size: 2rem;
+            color: #00ff88;
+            margin: 3rem 0 1rem;
+            text-transform: uppercase;
+        }
+
+        .about-content p {
+            font-size: 1.1rem;
+            line-height: 1.9;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .tech-item {
+            text-align: center;
+            padding: 2.5rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .tech-item h4 {
+            font-size: 1.8rem;
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .tech-item p {
+            color: #888;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            margin-top: 5rem;
+        }
+
+        .footer p {
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .about-content h2 {
+                font-size: 2.5rem;
+            }
+            
+            .about-content h3 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">SecureHunter</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/encrypt">Encrypt</a></li>
+            <li><a href="/decrypt">Decrypt</a></li>
+            <li><a href="/about" class="active">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        <a href="/encrypt" class="btn-nav">Get started free</a>
+    </nav>
+
+    <div class="about-content">
+        <h2>About Project</h2>
+        <p>
+            Our Secure File Encryption and Decryption System is designed to provide military-grade security for your sensitive files. Using the Advanced Encryption Standard (AES), we ensure that your data remains confidential and protected from unauthorized access.
+        </p>
+
+        <h3>Why AES Encryption?</h3>
+        <p>
+            AES is a symmetric encryption algorithm adopted by the U.S. government and used worldwide. It provides exceptional security through complex mathematical operations, making it virtually impossible to crack without the correct password. Our implementation uses industry-standard practices to ensure maximum security.
+        </p>
+
+        <h3>Why Security Matters</h3>
+        <p>
+            In today's digital age, protecting sensitive information is more critical than ever. Whether it's personal documents, financial records, or confidential business data, encryption ensures that only authorized individuals can access your files. Data breaches and cyber attacks are increasing, making strong encryption essential for everyone.
+        </p>
+
+        <h3>Technologies Used</h3>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <h4>Python</h4>
+                <p>Backend Programming</p>
+            </div>
+            <div class="tech-item">
+                <h4>Flask</h4>
+                <p>Web Framework</p>
+            </div>
+            <div class="tech-item">
+                <h4>AES-256</h4>
+                <p>Encryption Algorithm</p>
+            </div>
+            <div class="tech-item">
+                <h4>HTML/CSS/JS</h4>
+                <p>Frontend Interface</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 AES Secure | Secure File Encryption System | College Project</p>
+    </footer>
+</body>
+</html>

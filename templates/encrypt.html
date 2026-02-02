@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypt File | AES Secure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-transform: capitalize;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #00ff88;
+        }
+
+        .btn-nav {
+            padding: 0.7rem 1.8rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: capitalize;
+            text-decoration: none;
+        }
+
+        .btn-nav:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .page-container {
+            padding-top: 100px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #001a0d 50%, #000000 100%);
+        }
+
+        .glass-card {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 3rem;
+            background: rgba(0, 20, 10, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 10px;
+        }
+
+        .glass-card h2 {
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 2rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00ff88;
+            font-size: 0.95rem;
+        }
+
+        .form-group input[type="file"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 255, 136, 0.5);
+        }
+
+        .btn-submit:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .message-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .message-box.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+
+        .message-box.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: #ff6b6b;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.7rem 1.5rem;
+            background: #00ff88;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .download-link:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: #00ff88;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            margin-top: 5rem;
+        }
+
+        .footer p {
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .glass-card {
+                margin: 2rem 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">SecureHunter</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/encrypt" class="active">Encrypt</a></li>
+            <li><a href="/decrypt">Decrypt</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        <a href="/encrypt" class="btn-nav">Get started free</a>
+    </nav>
+
+    <div class="page-container">
+        <div class="glass-card">
+            <h2>🔒 Encrypt File</h2>
+            <form id="encryptForm">
+                <div class="form-group">
+                    <label for="encryptFile">Select File</label>
+                    <input type="file" id="encryptFile" name="file" required>
+                </div>
+                <div class="form-group">
+                    <label for="encryptPassword">Password</label>
+                    <input type="password" id="encryptPassword" name="password" placeholder="Enter strong password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter password" required>
+                </div>
+                <button type="submit" class="btn-submit" id="submitBtn">Encrypt File</button>
+                <div class="loading" id="loading">
+                    <p>⏳ Encrypting your file... Please wait.</p>
+                </div>
+                <div id="encryptMessage" class="message-box"></div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 AES Secure | Secure File Encryption System | College Project</p>
+    </footer>
+
+    <script>
+        document.getElementById('encryptForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const messageBox = document.getElementById('encryptMessage');
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Show loading
+            submitBtn.disabled = true;
+            loading.classList.add('active');
+            messageBox.style.display = 'none';
+            
+            try {
+                const response = await fetch('/encrypt', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    messageBox.className = 'message-box success';
+                    messageBox.innerHTML = `
+                        ✅ ${data.message}
+                        <br><br>
+                        <a href="${data.download_url}" class="download-link">📥 Download Encrypted File</a>
+                    `;
+                    messageBox.style.display = 'block';
+                    
+                    // Reset form
+                    this.reset();
+                } else {
+                    messageBox.className = 'message-box error';
+                    messageBox.textContent = `❌ ${data.message}`;
+                    messageBox.style.display = 'block';
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+                
+                messageBox.className = 'message-box error';
+                messageBox.textContent = '❌ An error occurred. Please try again.';
+                messageBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Secure | File Encryption System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-transform: capitalize;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #00ff88;
+        }
+
+        .btn-nav {
+            padding: 0.7rem 1.8rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: capitalize;
+            text-decoration: none;
+        }
+
+        .btn-nav:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #000000 0%, #001a0d 50%, #000000 100%);
+            padding-top: 80px;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 50px 50px, 50px 50px;
+        }
+
+        .hero-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 5%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content-left h2 {
+            font-size: 1.2rem;
+            color: #00ff88;
+            margin-bottom: 1rem;
+            font-weight: normal;
+        }
+
+        .hero-content-left p {
+            color: #888;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .btn-hero {
+            padding: 0.9rem 2rem;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-hero:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 255, 136, 0.5);
+        }
+
+        .hero-title {
+            font-size: 7rem;
+            font-weight: 900;
+            color: #00ff88;
+            line-height: 0.9;
+            letter-spacing: -3px;
+            text-align: center;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+        }
+
+        .hero-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 2;
+        }
+
+        .cyber-icon {
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .cyber-shield {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 200, 100, 0.05));
+            border: 3px solid #00ff88;
+            border-radius: 50%;
+            position: relative;
+            animation: pulse 3s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 60px rgba(0, 255, 136, 0.3),
+                inset 0 0 60px rgba(0, 255, 136, 0.1);
+        }
+
+        .cyber-shield::before {
+            content: '🔒';
+            font-size: 120px;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.6));
+        }
+
+        .cyber-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .line {
+            position: absolute;
+            background: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+        }
+
+        .line-1 {
+            width: 2px;
+            height: 100px;
+            top: -100px;
+            left: 50%;
+            animation: lineMove1 2s ease-in-out infinite;
+        }
+
+        .line-2 {
+            width: 100px;
+            height: 2px;
+            right: -100px;
+            top: 50%;
+            animation: lineMove2 2s ease-in-out infinite;
+        }
+
+        .line-3 {
+            width: 2px;
+            height: 100px;
+            bottom: -100px;
+            left: 50%;
+            animation: lineMove3 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 60px rgba(0, 255, 136, 0.3), inset 0 0 60px rgba(0, 255, 136, 0.1); }
+            50% { box-shadow: 0 0 80px rgba(0, 255, 136, 0.5), inset 0 0 80px rgba(0, 255, 136, 0.2); }
+        }
+
+        @keyframes lineMove1 {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(20px); }
+        }
+
+        @keyframes lineMove2 {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-20px); }
+        }
+
+        @keyframes lineMove3 {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-content-right {
+            text-align: right;
+        }
+
+        .hero-content-right h3 {
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-content-right p {
+            color: #888;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .stats-section {
+            display: flex;
+            justify-content: center;
+            gap: 5rem;
+            padding: 5rem 5%;
+            background: #000;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 10px;
+            min-width: 200px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            margin-top: 5rem;
+        }
+
+        .footer p {
+            color: #888;
+        }
+
+        @media (max-width: 968px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-title {
+                font-size: 4rem;
+            }
+
+            .cyber-icon {
+                width: 300px;
+                height: 300px;
+            }
+
+            .hero-content-right {
+                text-align: center;
+            }
+
+            .stats-section {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">SecureHunter</div>
+        <ul class="nav-links">
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/encrypt">Encrypt</a></li>
+            <li><a href="/decrypt">Decrypt</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        <a href="/encrypt" class="btn-nav">Get started free</a>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-container">
+            <div class="hero-content-left">
+                <h2>Security & Protection</h2>
+                <p>Advanced encryption system designed to protect your sensitive files using military-grade AES encryption technology. Your data security is our priority.</p>
+                <a href="/encrypt" class="btn-hero">Start Encrypting</a>
+            </div>
+
+            <div class="hero-center">
+                <div class="cyber-icon">
+                    <div class="cyber-shield">
+                        <div class="cyber-lines">
+                            <div class="line line-1"></div>
+                            <div class="line line-2"></div>
+                            <div class="line line-3"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-title">Secure</div>
+            </div>
+
+            <div class="hero-content-right">
+                <h3>Events and Updates</h3>
+                <p>Experience cutting-edge encryption technology where security meets innovation. Your files are protected with industry-standard AES algorithms.</p>
+                <a href="/about" class="btn-hero">Read More</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="stat-card">
+            <div class="stat-number">1253</div>
+            <div class="stat-label">Files Secured</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">357</div>
+            <div class="stat-label">Encryptions Performed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">251</div>
+            <div class="stat-label">Users Protected</div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2025 AES Secure | Secure File Encryption System | College Project</p>
+    </footer>
+</body>
+</html>
