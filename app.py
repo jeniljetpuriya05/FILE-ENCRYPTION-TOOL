@@ -110,6 +110,65 @@ def encrypt_file(file_path, password):
     except Exception as e:
         raise Exception(f"Encryption failed: {str(e)}")
 
+def decrypt_file(file_path, password):
+    """
+    Decrypt AES-256 encrypted file
+    Steps:
+    1. Read salt + IV + encrypted_data
+    2. Derive key from password + salt
+    3. Decrypt data using AES-CBC
+    4. Remove padding
+    5. Save original file
+    """
+    try:
+        # Read encrypted file
+        with open(file_path, 'rb') as f:
+            file_data = f.read()
+        
+        # Extract salt (first 16 bytes)
+        salt = file_data[:16]
+        
+        # Extract IV (next 16 bytes)
+        iv = file_data[16:32]
+        
+        # Extract encrypted data (remaining bytes)
+        ciphertext = file_data[32:]
+        
+        # Regenerate key from password and salt
+        key = generate_key_from_password(password, salt)
+        
+        # Create AES cipher in CBC mode
+        cipher = Cipher(
+            algorithms.AES(key),
+            modes.CBC(iv),
+            backend=default_backend()
+        )
+        decryptor = cipher.decryptor()
+        
+        # Decrypt the data
+        padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+        
+        # Remove padding
+        padding_length = padded_plaintext[-1]
+        plaintext = padded_plaintext[:-padding_length]
+        
+        # Create decrypted file path
+        original_filename = os.path.basename(file_path).replace('encrypted_', '').replace('.enc', '')
+        # Remove timestamp from filename
+        parts = original_filename.split('_')
+        if len(parts) >= 3:
+            original_filename = '_'.join(parts[2:])
+        
+        decrypted_path = os.path.join(DECRYPTED_FOLDER, original_filename)
+        
+        # Save decrypted file
+        with open(decrypted_path, 'wb') as f:
+            f.write(plaintext)
+        
+        return decrypted_path, original_filename
+    
+    except Exception as e:
+        raise Exception(f"Decryption failed: {str(e)}")
 
 def cleanup_old_files():
     """Clean up temporary files older than 1 hour"""
@@ -194,6 +253,52 @@ def encrypt():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/decrypt', methods=['GET', 'POST'])
+def decrypt():
+    """Decryption page and handler"""
+    if request.method == 'GET':
+        return render_template('decrypt.html')
+    
+    try:
+        # Get uploaded encrypted file
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        password = request.form.get('password')
+        
+        # Validation
+        if file.filename == '':
+            return jsonify({'success': False, 'message': 'No file selected'}), 400
+        
+        if not password:
+            return jsonify({'success': False, 'message': 'Password is required'}), 400
+        
+        # Check if file is encrypted (.enc extension)
+        if not file.filename.endswith('.enc'):
+            return jsonify({'success': False, 'message': 'Please upload an encrypted file (.enc)'}), 400
+        
+        # Save uploaded encrypted file
+        filename = secure_filename(file.filename)
+        upload_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(upload_path)
+        
+        # Decrypt file
+        decrypted_path, decrypted_filename = decrypt_file(upload_path, password)
+        
+        # Delete uploaded encrypted file
+        os.remove(upload_path)
+        
+        # Return success response
+        return jsonify({
+            'success': True,
+            'message': f'File decrypted successfully!',
+            'filename': decrypted_filename,
+            'download_url': f'/download/decrypted/{decrypted_filename}'
+        })
+    
+    except Exception as e:
+        # Wrong password or corrupted file
+        return jsonify({'success': False, 'message': 'Decryption failed. Wrong password or corrupted file.'}), 400
 
 @app.route('/download/<file_type>/<filename>')
 def download(file_type, filename):
