@@ -3,120 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encrypt File | AES Secure</title>
+    <title>Encrypt File | AES System Enhanced</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #000000;
+            background: linear-gradient(135deg, #000000 0%, #001a0d 50%, #000000 100%);
             color: #ffffff;
             min-height: 100vh;
         }
 
         .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
             background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
             padding: 1.2rem 5%;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00ff88;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-decoration: none;
-        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #00ff88; text-decoration: none; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: #888; text-decoration: none; }
+        .nav-links a:hover, .nav-links a.active { color: #00ff88; }
 
-        .nav-links {
-            display: flex;
-            gap: 3rem;
-            list-style: none;
-        }
+        .container { max-width: 700px; margin: 2rem auto; padding: 0 2rem; }
 
-        .nav-links a {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-            text-transform: capitalize;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: #00ff88;
-        }
-
-        .btn-nav {
-            padding: 0.7rem 1.8rem;
-            background: #00ff88;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-transform: capitalize;
-            text-decoration: none;
-        }
-
-        .btn-nav:hover {
-            background: #00dd77;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
-        }
-
-        .page-container {
-            padding-top: 100px;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #000000 0%, #001a0d 50%, #000000 100%);
-        }
-
-        .glass-card {
-            max-width: 600px;
-            margin: 3rem auto;
-            padding: 3rem;
+        .encrypt-card {
             background: rgba(0, 20, 10, 0.6);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 255, 136, 0.2);
             border-radius: 10px;
+            padding: 3rem;
         }
 
-        .glass-card h2 {
-            font-size: 2.5rem;
-            color: #00ff88;
-            margin-bottom: 2rem;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        h2 { font-size: 2.5rem; color: #00ff88; margin-bottom: 2rem; text-align: center; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #00ff88; font-weight: 500; }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #00ff88;
-            font-size: 0.95rem;
-        }
-
-        .form-group input[type="file"],
-        .form-group input[type="password"] {
+        input[type="file"], input[type="password"] {
             width: 100%;
             padding: 1rem;
             background: rgba(0, 0, 0, 0.5);
@@ -124,28 +50,62 @@
             border-radius: 5px;
             color: #ffffff;
             font-size: 1rem;
-            transition: all 0.3s;
         }
 
-        .form-group input:focus {
+        input:focus {
             outline: none;
             border-color: #00ff88;
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
 
+        .password-strength { margin-top: 0.5rem; display: none; }
+        .password-strength.show { display: block; }
+
+        .strength-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 10px;
+        }
+
+        .strength-weak { background: #ff4444; width: 33%; }
+        .strength-medium { background: #ffaa00; width: 66%; }
+        .strength-strong { background: #00ff88; width: 100%; }
+
+        .strength-text { font-size: 0.9rem; color: #888; }
+
+        .strength-messages {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.5rem;
+            list-style: none;
+        }
+
+        .strength-messages li { margin-bottom: 0.3rem; }
+        .strength-messages li.valid { color: #00ff88; }
+        .strength-messages li.invalid { color: #ff6b6b; }
+
         .btn-submit {
             width: 100%;
-            padding: 1rem;
+            padding: 1.2rem;
             background: #00ff88;
             color: #000;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             font-weight: bold;
             font-size: 1.1rem;
-            margin-top: 1rem;
+            cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
+            margin-top: 1rem;
         }
 
         .btn-submit:hover:not(:disabled) {
@@ -154,16 +114,14 @@
             box-shadow: 0 5px 25px rgba(0, 255, 136, 0.5);
         }
 
-        .btn-submit:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
+        .btn-submit:disabled { background: #555; cursor: not-allowed; }
+        .loading { display: none; text-align: center; margin-top: 1rem; color: #00ff88; }
+        .loading.active { display: block; }
 
         .message-box {
             margin-top: 1.5rem;
             padding: 1rem;
             border-radius: 5px;
-            text-align: center;
             display: none;
         }
 
@@ -179,97 +137,153 @@
             color: #ff6b6b;
         }
 
+        .hash-info {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .hash-info h4 { color: #00ff88; margin-bottom: 0.5rem; }
+
+        .hash-value {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #888;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 3px;
+            margin-top: 0.3rem;
+        }
+
         .download-link {
             display: inline-block;
             margin-top: 1rem;
-            padding: 0.7rem 1.5rem;
+            padding: 0.8rem 2rem;
             background: #00ff88;
             color: #000;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
-            transition: all 0.3s;
         }
 
-        .download-link:hover {
-            background: #00dd77;
-            transform: translateY(-2px);
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 1rem;
-            color: #00ff88;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.95);
-            border-top: 1px solid rgba(0, 255, 136, 0.2);
-            margin-top: 5rem;
-        }
-
-        .footer p {
-            color: #888;
-        }
-
-        @media (max-width: 768px) {
-            .glass-card {
-                margin: 2rem 1rem;
-                padding: 2rem;
-            }
-        }
+        .download-link:hover { background: #00dd77; }
+        .footer { text-align: center; padding: 2rem; color: #888; margin-top: 3rem; }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <a href="/" class="logo">SecureHunter</a>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/encrypt" class="active">Encrypt</a></li>
-            <li><a href="/decrypt">Decrypt</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-        </ul>
-        <a href="/encrypt" class="btn-nav">Get started free</a>
+        <a href="/" class="logo">🔐 AES ENCRYPTION</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/encrypt" class="active">Encrypt</a>
+            <a href="/history">History</a>
+        </div>
     </nav>
 
-    <div class="page-container">
-        <div class="glass-card">
+    <div class="container">
+        <div class="encrypt-card">
             <h2>🔒 Encrypt File</h2>
+            
             <form id="encryptForm">
                 <div class="form-group">
-                    <label for="encryptFile">Select File</label>
+                    <label for="encryptFile">📁 Select File to Encrypt</label>
                     <input type="file" id="encryptFile" name="file" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="encryptPassword">Password</label>
+                    <label for="encryptPassword">🔑 Encryption Password</label>
                     <input type="password" id="encryptPassword" name="password" placeholder="Enter strong password" required>
+                    
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText"></div>
+                        <ul class="strength-messages" id="strengthMessages"></ul>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
+                    <label for="confirmPassword">🔑 Confirm Password</label>
                     <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter password" required>
                 </div>
-                <button type="submit" class="btn-submit" id="submitBtn">Encrypt File</button>
+
+                <button type="submit" class="btn-submit" id="submitBtn">Encrypt File Now</button>
+
                 <div class="loading" id="loading">
-                    <p>⏳ Encrypting your file... Please wait.</p>
+                    ⏳ Encrypting and calculating file hashes... Please wait
                 </div>
+
                 <div id="encryptMessage" class="message-box"></div>
             </form>
         </div>
     </div>
 
     <footer class="footer">
-        <p>&copy; 2025 AES Secure | Secure File Encryption System | College Project</p>
+        <p>&copy; 2025 AES Encryption System Enhanced | Password Strength + File Integrity</p>
     </footer>
 
     <script>
+        const passwordInput = document.getElementById('encryptPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthMeter = document.getElementById('passwordStrength');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        const strengthMessages = document.getElementById('strengthMessages');
+
+        passwordInput.addEventListener('input', async function() {
+            const password = this.value;
+            
+            if (password.length === 0) {
+                strengthMeter.classList.remove('show');
+                return;
+            }
+            
+            strengthMeter.classList.add('show');
+            
+            try {
+                const response = await fetch('/validate-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    strengthFill.className = 'strength-fill';
+                    if (data.strength_level === 'Weak') {
+                        strengthFill.classList.add('strength-weak');
+                    } else if (data.strength_level === 'Medium') {
+                        strengthFill.classList.add('strength-medium');
+                    } else {
+                        strengthFill.classList.add('strength-strong');
+                    }
+                    
+                    strengthText.textContent = `Password Strength: ${data.strength_level} (${data.strength_score}/100)`;
+                    
+                    strengthMessages.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.textContent = msg;
+                        li.classList.add(msg.startsWith('✓') ? 'valid' : 'invalid');
+                        strengthMessages.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        confirmPasswordInput.addEventListener('input', function() {
+            this.style.borderColor = this.value !== passwordInput.value ? 
+                'rgba(255, 0, 0, 0.5)' : 'rgba(0, 255, 136, 0.5)';
+        });
+
         document.getElementById('encryptForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -277,10 +291,6 @@
             const loading = document.getElementById('loading');
             const messageBox = document.getElementById('encryptMessage');
             
-            // Get form data
-            const formData = new FormData(this);
-            
-            // Show loading
             submitBtn.disabled = true;
             loading.classList.add('active');
             messageBox.style.display = 'none';
@@ -288,37 +298,53 @@
             try {
                 const response = await fetch('/encrypt', {
                     method: 'POST',
-                    body: formData
+                    body: new FormData(this)
                 });
                 
                 const data = await response.json();
                 
-                // Hide loading
                 loading.classList.remove('active');
                 submitBtn.disabled = false;
                 
                 if (data.success) {
                     messageBox.className = 'message-box success';
                     messageBox.innerHTML = `
-                        ✅ ${data.message}
-                        <br><br>
+                        ✅ ${data.message}<br><br>
+                        <strong>File:</strong> ${data.filename}<br>
+                        <strong>Password Strength:</strong> ${data.password_strength} (${data.password_score}/100)<br>
+                        <strong>Hash Algorithm:</strong> ${data.hash_algorithm}<br><br>
+                        <div class="hash-info">
+                            <h4>📊 File Integrity Verification</h4>
+                            <div><strong>Original File Hash:</strong>
+                                <div class="hash-value">${data.original_file_hash}</div>
+                            </div>
+                            <div style="margin-top: 0.5rem;"><strong>Encrypted File Hash:</strong>
+                                <div class="hash-value">${data.encrypted_file_hash}</div>
+                            </div>
+                        </div><br>
                         <a href="${data.download_url}" class="download-link">📥 Download Encrypted File</a>
                     `;
                     messageBox.style.display = 'block';
-                    
-                    // Reset form
                     this.reset();
+                    strengthMeter.classList.remove('show');
                 } else {
                     messageBox.className = 'message-box error';
-                    messageBox.textContent = `❌ ${data.message}`;
+                    let errorMsg = `❌ ${data.message}`;
+                    if (data.validation_messages) {
+                        errorMsg += '<br><br><strong>Password Requirements:</strong><ul>';
+                        data.validation_messages.forEach(msg => {
+                            errorMsg += `<li>${msg}</li>`;
+                        });
+                        errorMsg += '</ul>';
+                    }
+                    messageBox.innerHTML = errorMsg;
                     messageBox.style.display = 'block';
                 }
             } catch (error) {
                 loading.classList.remove('active');
                 submitBtn.disabled = false;
-                
                 messageBox.className = 'message-box error';
-                messageBox.textContent = '❌ An error occurred. Please try again.';
+                messageBox.textContent = '❌ An error occurred.';
                 messageBox.style.display = 'block';
             }
         });
