@@ -6,7 +6,7 @@ Author: Student
 Technology: Flask + AES Cryptography + SQLite Database + SHA-256 Hashing
 """
 
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, session, redirect, url_for
 from werkzeug.utils import secure_filename
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes
@@ -132,6 +132,18 @@ def init_database():
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     
+    # Create users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP
+        )
+    ''')
+    
     # Create encryption_history table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS encryption_history (
@@ -148,7 +160,9 @@ def init_database():
             original_file_hash TEXT NOT NULL,
             encrypted_file_hash TEXT NOT NULL,
             hash_algorithm TEXT DEFAULT 'sha256',
-            status TEXT DEFAULT 'active'
+            status TEXT DEFAULT 'active',
+            user_id INTEGER,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     ''')
     
@@ -163,6 +177,12 @@ def init_database():
         )
     ''')
     
+    # Add user_id column to existing encryption_history table if it doesn't exist
+    try:
+        cursor.execute('ALTER TABLE encryption_history ADD COLUMN user_id INTEGER REFERENCES users(id)')
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
     # Initialize stats if not exists
     cursor.execute('SELECT COUNT(*) FROM encryption_stats')
     if cursor.fetchone()[0] == 0:
@@ -173,7 +193,7 @@ def init_database():
     print("✅ Database initialized successfully!")
 
 def add_encryption_record(original_filename, encrypted_filename, file_size, file_type, 
-                          password, password_strength, salt, iv, original_hash, encrypted_hash):
+                          password, password_strength, salt, iv, original_hash, encrypted_hash, user_id=None):
     """Add new encryption record to database"""
     try:
         conn = sqlite3.connect(DATABASE_NAME)
@@ -186,10 +206,10 @@ def add_encryption_record(original_filename, encrypted_filename, file_size, file
         cursor.execute('''
             INSERT INTO encryption_history 
             (original_filename, encrypted_filename, file_size, file_type, password_hash, 
-             password_strength, salt_hex, iv_hex, original_file_hash, encrypted_file_hash, hash_algorithm)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             password_strength, salt_hex, iv_hex, original_file_hash, encrypted_file_hash, hash_algorithm, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (original_filename, encrypted_filename, file_size, file_type, password_hash, 
-              password_strength, salt_hex, iv_hex, original_hash, encrypted_hash, 'sha256'))
+              password_strength, salt_hex, iv_hex, original_hash, encrypted_hash, 'sha256', user_id))
         
         cursor.execute('''
             UPDATE encryption_stats 
@@ -389,6 +409,53 @@ def cleanup_old_files():
         print(f"Cleanup error: {str(e)}")
 
 # =============================================================================
+# AUTH HELPER FUNCTIONS
+# =============================================================================
+
+def get_current_user():
+    """Get the current logged-in user from session"""
+    if 'user_id' in session:
+        try:
+            conn = sqlite3.connect(DATABASE_NAME)
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, name, username FROM users WHERE id = ?', (session['user_id'],))
+            user = cursor.fetchone()
+            conn.close()
+            if user:
+                return {'id': user[0], 'name': user[1], 'username': user[2]}
+        except Exception as e:
+            print(f"Error getting user: {str(e)}")
+    return None
+
+def get_user_history(user_id, limit=20):
+    """Get encryption history for a specific user"""
+    try:
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, original_filename, encrypted_filename, file_size, file_type,
+                   encryption_date, password_strength, original_file_hash, encrypted_file_hash, status
+            FROM encryption_history
+            WHERE user_id = ?
+            ORDER BY encryption_date DESC
+            LIMIT ?
+        ''', (user_id, limit))
+        results = cursor.fetchall()
+        conn.close()
+        history = []
+        for row in results:
+            history.append({
+                'id': row[0], 'original_filename': row[1], 'encrypted_filename': row[2],
+                'file_size': row[3], 'file_type': row[4], 'encryption_date': row[5],
+                'password_strength': row[6], 'original_file_hash': row[7],
+                'encrypted_file_hash': row[8], 'status': row[9]
+            })
+        return history
+    except Exception as e:
+        print(f"Database error: {str(e)}")
+        return []
+
+# =============================================================================
 # FLASK ROUTES
 # =============================================================================
 
@@ -397,7 +464,8 @@ def index():
     """Home page"""
     cleanup_old_files()
     stats = get_encryption_stats()
-    return render_template('index.html', stats=stats)
+    user = get_current_user()
+    return render_template('index.html', stats=stats, user=user)
 
 @app.route('/validate-password', methods=['POST'])
 def validate_password():
@@ -426,7 +494,8 @@ def validate_password():
 def encrypt():
     """Encryption page and handler"""
     if request.method == 'GET':
-        return render_template('encrypt.html')
+        user = get_current_user()
+        return render_template('encrypt.html', user=user)
     
     try:
         if 'file' not in request.files:
@@ -472,9 +541,11 @@ def encrypt():
         
         encrypted_path, encrypted_filename, salt, iv, original_hash, encrypted_hash = encrypt_file(upload_path, password)
         
+        user = get_current_user()
+        user_id = user['id'] if user else None
         add_encryption_record(
             original_filename, encrypted_filename, file_size, file_type,
-            password, level, salt, iv, original_hash, encrypted_hash
+            password, level, salt, iv, original_hash, encrypted_hash, user_id
         )
         
         os.remove(upload_path)
@@ -498,7 +569,8 @@ def encrypt():
 def decrypt():
     """Decryption page and handler"""
     if request.method == 'GET':
-        return render_template('decrypt.html')
+        user = get_current_user()
+        return render_template('decrypt.html', user=user)
     
     try:
         if 'file' not in request.files:
@@ -559,7 +631,8 @@ def download(file_type, filename):
 def contact():
     """Contact page"""
     if request.method == 'GET':
-        return render_template('contact.html')
+        user = get_current_user()
+        return render_template('contact.html', user=user)
     
     try:
         name = request.form.get('name')
@@ -579,14 +652,166 @@ def contact():
 @app.route('/about')
 def about():
     """About page"""
-    return render_template('about.html')
+    user = get_current_user()
+    return render_template('about.html', user=user)
 
 @app.route('/history')
 def history():
     """View encryption history"""
     history_data = get_encryption_history(limit=50)
     stats = get_encryption_stats()
-    return render_template('history.html', history=history_data, stats=stats)
+    user = get_current_user()
+    return render_template('history.html', history=history_data, stats=stats, user=user)
+
+# =============================================================================
+# AUTH ROUTES
+# =============================================================================
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login page and handler"""
+    if get_current_user():
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'GET':
+        return render_template('login.html')
+    
+    try:
+        data = request.get_json()
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        
+        if not username or not password:
+            return jsonify({'success': False, 'message': 'Username and password are required'}), 400
+        
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, name, username, password_hash FROM users WHERE username = ?', (username,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
+        
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        if user[3] != password_hash:
+            return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
+        
+        # Update last login
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', (user[0],))
+        conn.commit()
+        conn.close()
+        
+        session['user_id'] = user[0]
+        session['user_name'] = user[1]
+        session['user_username'] = user[2]
+        
+        return jsonify({
+            'success': True,
+            'message': f'Welcome back, {user[1]}!',
+            'redirect': url_for('dashboard')
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    """Signup handler"""
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+        
+        if not name or not username or not password or not confirm_password:
+            return jsonify({'success': False, 'message': 'All fields are required'}), 400
+        
+        if len(name) < 2:
+            return jsonify({'success': False, 'message': 'Name must be at least 2 characters'}), 400
+        
+        if len(username) < 3:
+            return jsonify({'success': False, 'message': 'Username must be at least 3 characters'}), 400
+        
+        if not re.match(r'^[a-zA-Z0-9_]+$', username):
+            return jsonify({'success': False, 'message': 'Username can only contain letters, numbers, and underscores'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'success': False, 'message': 'Password must be at least 6 characters'}), 400
+        
+        if password != confirm_password:
+            return jsonify({'success': False, 'message': 'Passwords do not match'}), 400
+        
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        
+        # Check if username already exists
+        cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({'success': False, 'message': 'Username already taken. Please choose another.'}), 409
+        
+        cursor.execute(
+            'INSERT INTO users (name, username, password_hash, last_login) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
+            (name, username, password_hash)
+        )
+        user_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        session['user_id'] = user_id
+        session['user_name'] = name
+        session['user_username'] = username
+        
+        return jsonify({
+            'success': True,
+            'message': f'Account created successfully! Welcome, {name}!',
+            'redirect': url_for('dashboard')
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/logout')
+def logout():
+    """Logout and clear session"""
+    session.clear()
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+def dashboard():
+    """User dashboard - login required"""
+    user = get_current_user()
+    if not user:
+        return redirect(url_for('login'))
+    
+    user_history = get_user_history(user['id'])
+    stats = get_encryption_stats()
+    
+    # Get user-specific stats
+    try:
+        conn = sqlite3.connect(DATABASE_NAME)
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM encryption_history WHERE user_id = ?', (user['id'],))
+        user_encryptions = cursor.fetchone()[0]
+        cursor.execute('SELECT COALESCE(SUM(file_size), 0) FROM encryption_history WHERE user_id = ?', (user['id'],))
+        user_total_size = cursor.fetchone()[0]
+        conn.close()
+    except:
+        user_encryptions = 0
+        user_total_size = 0
+    
+    user_stats = {
+        'total_encryptions': user_encryptions,
+        'total_size_mb': round(user_total_size / (1024 * 1024), 2)
+    }
+    
+    return render_template('dashboard.html', user=user, history=user_history, stats=stats, user_stats=user_stats)
 
 @app.route('/api/stats')
 def api_stats():
@@ -612,14 +837,16 @@ def internal_error(error):
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("🔐 COMPLETE AES FILE ENCRYPTION & DECRYPTION SYSTEM")
+    print("COMPLETE AES FILE ENCRYPTION & DECRYPTION SYSTEM")
     print("=" * 70)
-    print("✅ Encryption")
-    print("✅ Decryption")
-    print("✅ Password Strength Validation")
-    print("✅ File Integrity Verification (SHA-256)")
-    print("✅ Database Tracking")
-    print("✅ Contact Page")
+    print("[+] Encryption")
+    print("[+] Decryption")
+    print("[+] Password Strength Validation")
+    print("[+] File Integrity Verification (SHA-256)")
+    print("[+] Database Tracking")
+    print("[+] User Login & Signup")
+    print("[+] User Dashboard")
+    print("[+] Contact Page")
     print("=" * 70)
     
     init_database()

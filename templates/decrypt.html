@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -227,6 +228,7 @@
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <a href="/" class="logo">SecureHunter</a>
@@ -237,7 +239,15 @@
             <li><a href="/about">About</a></li>
             <li><a href="/contact">Contact</a></li>
         </ul>
-        <a href="/encrypt" class="btn-nav">Get started free</a>
+        {% if user %}
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span style="color:#aaa;font-size:0.9rem;">Hi, <strong style="color:#00ff88;">{{ user.name }}</strong></span>
+            <a href="/dashboard" class="btn-nav">Dashboard</a>
+            <a href="/logout" style="color:#ff6b6b;text-decoration:none;font-size:0.85rem;border:1px solid rgba(255,100,100,0.3);padding:0.5rem 1rem;border-radius:5px;">Logout</a>
+        </div>
+        {% else %}
+        <a href="/login" class="btn-nav">Login</a>
+        {% endif %}
     </nav>
 
     <div class="page-container">
@@ -250,7 +260,8 @@
                 </div>
                 <div class="form-group">
                     <label for="decryptPassword">Password</label>
-                    <input type="password" id="decryptPassword" name="password" placeholder="Enter decryption password" required>
+                    <input type="password" id="decryptPassword" name="password" placeholder="Enter decryption password"
+                        required>
                 </div>
                 <button type="submit" class="btn-submit" id="submitBtn">Decrypt File</button>
                 <div class="loading" id="loading">
@@ -266,33 +277,33 @@
     </footer>
 
     <script>
-        document.getElementById('decryptForm').addEventListener('submit', async function(e) {
+        document.getElementById('decryptForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const submitBtn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
             const messageBox = document.getElementById('decryptMessage');
-            
+
             // Get form data
             const formData = new FormData(this);
-            
+
             // Show loading
             submitBtn.disabled = true;
             loading.classList.add('active');
             messageBox.style.display = 'none';
-            
+
             try {
                 const response = await fetch('/decrypt', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 // Hide loading
                 loading.classList.remove('active');
                 submitBtn.disabled = false;
-                
+
                 if (data.success) {
                     messageBox.className = 'message-box success';
                     messageBox.innerHTML = `
@@ -301,7 +312,7 @@
                         <a href="${data.download_url}" class="download-link">📥 Download Decrypted File</a>
                     `;
                     messageBox.style.display = 'block';
-                    
+
                     // Reset form
                     this.reset();
                 } else {
@@ -312,7 +323,7 @@
             } catch (error) {
                 loading.classList.remove('active');
                 submitBtn.disabled = false;
-                
+
                 messageBox.className = 'message-box error';
                 messageBox.textContent = '❌ An error occurred. Please try again.';
                 messageBox.style.display = 'block';
@@ -320,4 +331,5 @@
         });
     </script>
 </body>
+
 </html>

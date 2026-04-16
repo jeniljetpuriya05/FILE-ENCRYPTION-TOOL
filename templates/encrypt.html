@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encrypt File | AES System Enhanced</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Arial', sans-serif;
@@ -23,12 +28,33 @@
             align-items: center;
         }
 
-        .logo { font-size: 1.5rem; font-weight: bold; color: #00ff88; text-decoration: none; }
-        .nav-links { display: flex; gap: 2rem; }
-        .nav-links a { color: #888; text-decoration: none; }
-        .nav-links a:hover, .nav-links a.active { color: #00ff88; }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            text-decoration: none;
+        }
 
-        .container { max-width: 700px; margin: 2rem auto; padding: 0 2rem; }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #888;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #00ff88;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
 
         .encrypt-card {
             background: rgba(0, 20, 10, 0.6);
@@ -38,11 +64,26 @@
             padding: 3rem;
         }
 
-        h2 { font-size: 2.5rem; color: #00ff88; margin-bottom: 2rem; text-align: center; }
-        .form-group { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #00ff88; font-weight: 500; }
+        h2 {
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
 
-        input[type="file"], input[type="password"] {
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00ff88;
+            font-weight: 500;
+        }
+
+        input[type="file"],
+        input[type="password"] {
             width: 100%;
             padding: 1rem;
             background: rgba(0, 0, 0, 0.5);
@@ -58,8 +99,14 @@
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
         }
 
-        .password-strength { margin-top: 0.5rem; display: none; }
-        .password-strength.show { display: block; }
+        .password-strength {
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-strength.show {
+            display: block;
+        }
 
         .strength-bar {
             height: 8px;
@@ -76,11 +123,25 @@
             border-radius: 10px;
         }
 
-        .strength-weak { background: #ff4444; width: 33%; }
-        .strength-medium { background: #ffaa00; width: 66%; }
-        .strength-strong { background: #00ff88; width: 100%; }
+        .strength-weak {
+            background: #ff4444;
+            width: 33%;
+        }
 
-        .strength-text { font-size: 0.9rem; color: #888; }
+        .strength-medium {
+            background: #ffaa00;
+            width: 66%;
+        }
+
+        .strength-strong {
+            background: #00ff88;
+            width: 100%;
+        }
+
+        .strength-text {
+            font-size: 0.9rem;
+            color: #888;
+        }
 
         .strength-messages {
             font-size: 0.85rem;
@@ -89,9 +150,17 @@
             list-style: none;
         }
 
-        .strength-messages li { margin-bottom: 0.3rem; }
-        .strength-messages li.valid { color: #00ff88; }
-        .strength-messages li.invalid { color: #ff6b6b; }
+        .strength-messages li {
+            margin-bottom: 0.3rem;
+        }
+
+        .strength-messages li.valid {
+            color: #00ff88;
+        }
+
+        .strength-messages li.invalid {
+            color: #ff6b6b;
+        }
 
         .btn-submit {
             width: 100%;
@@ -114,9 +183,21 @@
             box-shadow: 0 5px 25px rgba(0, 255, 136, 0.5);
         }
 
-        .btn-submit:disabled { background: #555; cursor: not-allowed; }
-        .loading { display: none; text-align: center; margin-top: 1rem; color: #00ff88; }
-        .loading.active { display: block; }
+        .btn-submit:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: #00ff88;
+        }
+
+        .loading.active {
+            display: block;
+        }
 
         .message-box {
             margin-top: 1.5rem;
@@ -146,7 +227,10 @@
             font-size: 0.9rem;
         }
 
-        .hash-info h4 { color: #00ff88; margin-bottom: 0.5rem; }
+        .hash-info h4 {
+            color: #00ff88;
+            margin-bottom: 0.5rem;
+        }
 
         .hash-value {
             font-family: monospace;
@@ -170,24 +254,43 @@
             font-weight: bold;
         }
 
-        .download-link:hover { background: #00dd77; }
-        .footer { text-align: center; padding: 2rem; color: #888; margin-top: 3rem; }
+        .download-link:hover {
+            background: #00dd77;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            margin-top: 3rem;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <a href="/" class="logo">🔐 AES ENCRYPTION</a>
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/encrypt" class="active">Encrypt</a>
+            <a href="/decrypt">Decrypt</a>
             <a href="/history">History</a>
         </div>
+        {% if user %}
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span style="color:#aaa;font-size:0.9rem;">Hi, <strong style="color:#00ff88;">{{ user.name }}</strong></span>
+            <a href="/dashboard" style="color:#00ff88;text-decoration:none;font-size:0.9rem;">Dashboard</a>
+            <a href="/logout" style="color:#ff6b6b;text-decoration:none;font-size:0.85rem;border:1px solid rgba(255,100,100,0.3);padding:0.4rem 0.8rem;border-radius:5px;">Logout</a>
+        </div>
+        {% else %}
+        <a href="/login" style="padding:0.6rem 1.5rem;background:#00ff88;color:#000;border-radius:5px;text-decoration:none;font-weight:bold;font-size:0.9rem;">Login</a>
+        {% endif %}
     </nav>
 
     <div class="container">
         <div class="encrypt-card">
             <h2>🔒 Encrypt File</h2>
-            
+
             <form id="encryptForm">
                 <div class="form-group">
                     <label for="encryptFile">📁 Select File to Encrypt</label>
@@ -196,8 +299,9 @@
 
                 <div class="form-group">
                     <label for="encryptPassword">🔑 Encryption Password</label>
-                    <input type="password" id="encryptPassword" name="password" placeholder="Enter strong password" required>
-                    
+                    <input type="password" id="encryptPassword" name="password" placeholder="Enter strong password"
+                        required>
+
                     <div class="password-strength" id="passwordStrength">
                         <div class="strength-bar">
                             <div class="strength-fill" id="strengthFill"></div>
@@ -209,7 +313,8 @@
 
                 <div class="form-group">
                     <label for="confirmPassword">🔑 Confirm Password</label>
-                    <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter password" required>
+                    <input type="password" id="confirmPassword" name="confirm_password" placeholder="Re-enter password"
+                        required>
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn">Encrypt File Now</button>
@@ -235,25 +340,25 @@
         const strengthText = document.getElementById('strengthText');
         const strengthMessages = document.getElementById('strengthMessages');
 
-        passwordInput.addEventListener('input', async function() {
+        passwordInput.addEventListener('input', async function () {
             const password = this.value;
-            
+
             if (password.length === 0) {
                 strengthMeter.classList.remove('show');
                 return;
             }
-            
+
             strengthMeter.classList.add('show');
-            
+
             try {
                 const response = await fetch('/validate-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     strengthFill.className = 'strength-fill';
                     if (data.strength_level === 'Weak') {
@@ -263,9 +368,9 @@
                     } else {
                         strengthFill.classList.add('strength-strong');
                     }
-                    
+
                     strengthText.textContent = `Password Strength: ${data.strength_level} (${data.strength_score}/100)`;
-                    
+
                     strengthMessages.innerHTML = '';
                     data.messages.forEach(msg => {
                         const li = document.createElement('li');
@@ -279,33 +384,33 @@
             }
         });
 
-        confirmPasswordInput.addEventListener('input', function() {
-            this.style.borderColor = this.value !== passwordInput.value ? 
+        confirmPasswordInput.addEventListener('input', function () {
+            this.style.borderColor = this.value !== passwordInput.value ?
                 'rgba(255, 0, 0, 0.5)' : 'rgba(0, 255, 136, 0.5)';
         });
 
-        document.getElementById('encryptForm').addEventListener('submit', async function(e) {
+        document.getElementById('encryptForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const submitBtn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
             const messageBox = document.getElementById('encryptMessage');
-            
+
             submitBtn.disabled = true;
             loading.classList.add('active');
             messageBox.style.display = 'none';
-            
+
             try {
                 const response = await fetch('/encrypt', {
                     method: 'POST',
                     body: new FormData(this)
                 });
-                
+
                 const data = await response.json();
-                
+
                 loading.classList.remove('active');
                 submitBtn.disabled = false;
-                
+
                 if (data.success) {
                     messageBox.className = 'message-box success';
                     messageBox.innerHTML = `
@@ -350,4 +455,5 @@
         });
     </script>
 </body>
+
 </html>
